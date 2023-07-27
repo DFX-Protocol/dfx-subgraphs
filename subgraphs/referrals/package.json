@@ -1,0 +1,20 @@
+{
+  "name": "dfx-referrals",
+  "license": "MIT",
+  "version": "0.0.1",
+  "scripts": {
+    "codegen": "graph codegen",
+    "build": "graph build",
+    
+    "create-local": "graph create --node http://localhost:8020/ dfx-referrals",
+    "remove-local": "graph remove --node http://localhost:8020/ dfx-referrals",
+    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 dfx-referrals",
+
+    "prepare:arbitrum-one": "mustache ../../config/arbitrum-one.js template.yaml > subgraph.yaml"
+  },
+  "dependencies": {
+    "@graphprotocol/graph-cli": "^0.51.0",
+    "@graphprotocol/graph-ts": "^0.31.0"
+  },
+  "devDependencies": { "matchstick-as": "0.5.0" }
+}
