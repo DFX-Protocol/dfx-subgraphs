@@ -1,4 +1,7 @@
 specVersion: 0.0.4
+description: DFX
+repository: https://github.com/DFX-Protocol/dfx-subgraph
+
 schema:
   file: ./schema.graphql
 dataSources:

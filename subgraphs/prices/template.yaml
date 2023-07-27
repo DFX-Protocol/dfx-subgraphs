@@ -1,0 +1,27 @@
+specVersion: 0.0.4
+description: DFX
+repository: https://github.com/DFX-Protocol/dfx-subgraph
+
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: FastPriceEvents
+    network: {{ network }}
+    source:
+      address: "{{fastPriceEvents.address}}"
+      abi: FastPriceEvents
+      startBlock: {{fastPriceEvents.startBlock}}  # FastPriceEvents was deployed
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - PriceUpdate
+      abis:
+        - name: FastPriceEvents
+          file: ./abis/FastPriceEvents.json
+      eventHandlers:
+        - event: PriceUpdate(address,uint256,address)
+          handler: handlePriceUpdate
+      file: ./src/mapping.ts

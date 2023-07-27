@@ -12,5 +12,9 @@ module.exports =
     "vault": {
         "address": "0x489ee077994B6658eAfA855C308275EAd8097C4A",
         "startBlock": "227000"
+    },
+    "fastPriceEvents": {
+      "address": "0x4530b7de1958270a2376be192a24175d795e1b07",
+      "startBlock": "3716732"
     }
   }
