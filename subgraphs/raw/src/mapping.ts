@@ -1,13 +1,10 @@
 import { BigInt, ethereum } from "@graphprotocol/graph-ts"
 import * as vault from "../generated/Vault/Vault"
 import * as positionRouter from "../generated/PositionRouter/PositionRouter"
-import * as glpManager from "../generated/GlpManager/GlpManager"
 import * as rewardRouter from "../generated/RewardRouterV2/RewardRouterV2"
 import {
   CollectMarginFee,
   CollectSwapFee,
-  AddLiquidity,
-  RemoveLiquidity,
   IncreasePosition,
   DecreasePosition,
   LiquidatePosition,
@@ -33,14 +30,16 @@ function _createTransactionIfNotExist(event: ethereum.Event): string {
     entity.blockNumber = event.block.number.toI32()
     entity.transactionIndex = event.transaction.index.toI32()
     entity.from = event.transaction.from.toHexString()
-    if (event.transaction.to == null) {
-      entity.to = ""
+    // Just to get rid of a funny error 
+    const toObj = event.transaction.to
+    if(toObj && toObj !== null){
+      entity.to = toObj.toHexString();
     } else {
-      entity.to = event.transaction.to.toHexString()
+      entity.to = ""
     }
     entity.save()
   }
-
+  
   return id
 }
 
@@ -230,40 +229,6 @@ export function handleSwap(event: vault.Swap): void {
   entity.timestamp = event.block.timestamp.toI32()
 
   entity.save()
-}
-
-export function handleAddLiquidity(event: glpManager.AddLiquidity): void {
-  let entity = new AddLiquidity(event.transaction.hash.toHexString())
-
-  entity.account = event.params.account.toHexString()
-  entity.token = event.params.token.toHexString()
-  entity.amount = event.params.amount
-  entity.aumInUsdg = event.params.aumInUsdg
-  entity.glpSupply = event.params.glpSupply
-  entity.usdgAmount = event.params.usdgAmount
-  entity.mintAmount = event.params.mintAmount
-
-  entity.transaction = _createTransactionIfNotExist(event)
-  entity.timestamp = event.block.timestamp.toI32()
-
-  entity.save()
-}
-
-export function handleRemoveLiquidity(event: glpManager.RemoveLiquidity): void {
-  let entity = new RemoveLiquidity(event.transaction.hash.toHexString())
-
-  entity.account = event.params.account.toHexString()
-  entity.token = event.params.token.toHexString()
-  entity.glpAmount = event.params.glpAmount
-  entity.aumInUsdg = event.params.aumInUsdg
-  entity.glpSupply = event.params.glpSupply
-  entity.usdgAmount = event.params.usdgAmount
-  entity.amountOut = event.params.amountOut
-
-  entity.transaction = _createTransactionIfNotExist(event)
-  entity.timestamp = event.block.timestamp.toI32()
-
-  entity.save() 
 }
 
 export function handleStakeGmx(event: rewardRouter.StakeGmx): void {
