@@ -64,6 +64,14 @@ import {
 let ZERO = BigInt.fromI32(0)
 let FUNDING_PRECISION = BigInt.fromI32(1000000)
 
+let TRADE_TYPES = new Array<string>(5)
+TRADE_TYPES[0] = "margin"
+TRADE_TYPES[1] = "swap"
+TRADE_TYPES[2] = "mint"
+TRADE_TYPES[3] = "burn"
+TRADE_TYPES[4] = "liquidation"
+TRADE_TYPES[5] = "marginAndLiquidation"
+
 const LIQUIDATOR_ADDRESS = "0x44311c91008dde73de521cd25136fd37d616802c"
 
 export function handleIncreasePosition(event: IncreasePositionEvent): void {
@@ -129,47 +137,6 @@ export function handleLiquidatePosition(event: LiquidatePositionEvent): void {
   )
 }
 
-function _storeLiquidatedPosition(
-  keyBytes: Bytes,
-  timestamp: BigInt,
-  account: Address,
-  indexToken: Address,
-  size: BigInt,
-  collateralToken: Address,
-  collateral: BigInt,
-  isLong: boolean,
-  type: string,
-  markPrice: BigInt
-): void {
-  let key = keyBytes.toHexString()
-  let position = ActivePosition.load(key)
-  let averagePrice = position.averagePrice
-
-  let id = key + ":" + timestamp.toString()
-  let liquidatedPosition = new LiquidatedPosition(id)
-  liquidatedPosition.account = account.toHexString()
-  liquidatedPosition.timestamp = timestamp.toI32()
-  liquidatedPosition.indexToken = indexToken.toHexString()
-  liquidatedPosition.size = size
-  liquidatedPosition.collateralToken = collateralToken.toHexString()
-  liquidatedPosition.collateral = position.collateral
-  liquidatedPosition.isLong = isLong
-  liquidatedPosition.type = type
-  liquidatedPosition.key = key
-
-  liquidatedPosition.markPrice = markPrice
-  liquidatedPosition.averagePrice = averagePrice
-  let priceDelta = isLong ? averagePrice - markPrice : markPrice - averagePrice
-  liquidatedPosition.loss = size * priceDelta / averagePrice
-
-  let fundingRateId = _getFundingRateId("total", collateralToken)
-  let fundingRateEntity = FundingRate.load(fundingRateId)
-  let accruedFundingRate = BigInt.fromI32(fundingRateEntity.endFundingRate) - position.entryFundingRate
-  liquidatedPosition.borrowFee = accruedFundingRate * size / FUNDING_PRECISION
-
-  liquidatedPosition.save()
-}
-
 export function handleBuyUSDG(event: BuyUSDGEvent): void {
   let volume = event.params.usdgAmount * BigInt.fromString("1000000000000")
   _storeVolume("mint", event.block.timestamp, volume)
@@ -203,10 +170,14 @@ export function handleSwap(event: SwapEvent): void {
   if (transaction == null) {
     transaction = new Transaction(event.transaction.hash.toHexString())
     transaction.from = event.transaction.from.toHexString()
-    transaction.to = event.transaction.to.toHexString()
+    let toObj = event.transaction.to
+    if(toObj && toObj !== null){
+      transaction.to = toObj.toHexString()
+    } else {
+      transaction.to = "";
+    }
     transaction.save()
   }
-
 
   let id = _getIdFromEvent(event)
   let entity = new Swap(id)
@@ -241,109 +212,12 @@ export function handleSwap(event: SwapEvent): void {
   _storeUserAction(event.block.timestamp, event.transaction.from, "swap")
 }
 
-function _storeUserAction(timestamp: BigInt, account: Address, actionType: String): void {
-  let totalEntity = _storeUserActionByType(timestamp, account, actionType, "total", null)
-
-  _storeUserActionByType(timestamp, account, actionType, "daily", totalEntity)
-  _storeUserActionByType(timestamp, account, actionType, "weekly", totalEntity)
-}
-
-function _storeUserActionByType(
-  timestamp: BigInt,
-  account: Address,
-  actionType: string,
-  period: string,
-  userStatTotal: UserStat | null
-): UserStat {
-  let timestampId = period == "weekly" ? _getWeekId(timestamp) : _getDayId(timestamp)
-  let userId = period == "total" ? account.toHexString() : period + ":" + timestampId + ":" + account.toHexString()
-  let user = UserData.load(userId)
-
-  let statId = period == "total" ? "total" : period + ":" + timestampId
-  let userStat = UserStat.load(statId)
-  if (userStat == null) {
-    userStat = new UserStat(statId)
-    userStat.period = period
-    userStat.timestamp = parseInt(timestampId) as i32
-
-    userStat.uniqueCount = 0
-    userStat.uniqueMarginCount = 0
-    userStat.uniqueSwapCount = 0
-    userStat.uniqueMintBurnCount = 0
-
-    userStat.uniqueCountCumulative = 0
-    userStat.uniqueMarginCountCumulative = 0
-    userStat.uniqueSwapCountCumulative = 0
-    userStat.uniqueMintBurnCountCumulative = 0
-
-    userStat.actionCount = 0
-    userStat.actionMarginCount = 0
-    userStat.actionSwapCount = 0
-    userStat.actionMintBurnCount = 0
-  }
-
-  if (user == null) {
-    user = new UserData(userId) 
-    user.period = period
-    user.timestamp = parseInt(timestampId) as i32
-
-    user.actionSwapCount = 0
-    user.actionMarginCount = 0
-    user.actionMintBurnCount = 0
-
-    userStat.uniqueCount = userStat.uniqueCount + 1
-
-    if (period == "total") {
-      userStat.uniqueCountCumulative = userStat.uniqueCount
-    } else if (userStatTotal != null) {
-      userStat.uniqueCountCumulative = userStatTotal.uniqueCount
-    }
-  }
-
-  userStat.actionCount += 1
-
-  let actionCountProp: string
-  let uniqueCountProp: string
-  if (actionType == "margin") {
-    actionCountProp = "actionMarginCount"
-    uniqueCountProp = "uniqueMarginCount"
-  } else if (actionType == "swap") {
-    actionCountProp = "actionSwapCount"
-    uniqueCountProp = "uniqueSwapCount"
-  } else if (actionType == "mintBurn") {
-    actionCountProp = "actionMintBurnCount"
-    uniqueCountProp = "uniqueMintBurnCount"
-  }
-  let uniqueCountCumulativeProp = uniqueCountProp + "Cumulative"
-
-  if (user.getI32(actionCountProp) == 0) {
-    userStat.setI32(uniqueCountProp, userStat.getI32(uniqueCountProp) + 1)
-  }
-  user.setI32(actionCountProp, user.getI32(actionCountProp) + 1)
-  userStat.setI32(actionCountProp, userStat.getI32(actionCountProp) + 1)
-
-  if (period == "total") {
-    userStat.setI32(uniqueCountCumulativeProp, userStat.getI32(uniqueCountProp))
-  } else if (userStatTotal != null) {
-    userStat.setI32(uniqueCountCumulativeProp, userStatTotal.getI32(uniqueCountProp))
-  }
-
-  user.save()
-  userStat.save()
-
-  return userStat as UserStat
-}
-
 export function handleAddLiquidity(event: AddLiquidity): void {
   _storeGlpStat(event.block.timestamp, event.params.glpSupply, event.params.aumInUsdg)
 }
 
 export function handleRemoveLiquidity(event: RemoveLiquidity): void {
   _storeGlpStat(event.block.timestamp, event.params.glpSupply, event.params.aumInUsdg)
-}
-
-function _getFundingRateId(timeKey: string, token: Address): string {
-  return timeKey + ":" + token.toHexString()
 }
 
 export function handleUpdateFundingRate(event: UpdateFundingRate): void {
@@ -408,6 +282,7 @@ export function handleDistributeEthToGmx(event: Distribute): void {
 
   entity.save()
 }
+
 export function handleDistributeEsgmxToGmx(event: Distribute): void {
   let amount = event.params.amount
   let amountUsd = getTokenAmountUsd(GMX, amount)
@@ -429,176 +304,6 @@ export function handleDistributeEsgmxToGmx(event: Distribute): void {
   entity.distributedEsgmxUsdCumulative = totalEntity.distributedUsdCumulative
 
   entity.save()
-}
-
-function _getOrCreateGmxStat(id: string, period: string): GmxStat {
-  let entity = GmxStat.load(id)
-  if (entity == null) {
-    entity = new GmxStat(id)
-    entity.distributedEth = ZERO
-    entity.distributedEthCumulative = ZERO
-    entity.distributedUsd = ZERO
-    entity.distributedUsdCumulative = ZERO
-    entity.distributedEsgmx = ZERO
-    entity.distributedEsgmxCumulative = ZERO
-    entity.distributedEsgmxUsd = ZERO
-    entity.distributedEsgmxUsdCumulative = ZERO
-    entity.period = period
-  }
-  return entity as GmxStat
-}
-
-let TRADE_TYPES = new Array<string>(5)
-TRADE_TYPES[0] = "margin"
-TRADE_TYPES[1] = "swap"
-TRADE_TYPES[2] = "mint"
-TRADE_TYPES[3] = "burn"
-TRADE_TYPES[4] = "liquidation"
-TRADE_TYPES[5] = "marginAndLiquidation"
-
-function _storeFees(type: string, timestamp: BigInt, fees: BigInt): void {
-  let deprecatedId = _getHourId(timestamp)
-  let entityDeprecated = HourlyFee.load(deprecatedId)
-
-  if (entityDeprecated == null) {
-    entityDeprecated = new HourlyFee(deprecatedId)
-    for (let i = 0; i < TRADE_TYPES.length; i++) {
-      let _type = TRADE_TYPES[i]
-      entityDeprecated.setBigInt(_type, ZERO)
-    }
-  }
-
-  entityDeprecated.setBigInt(type, entityDeprecated.getBigInt(type) + fees)
-  entityDeprecated.save()
-
-  //
-
-  let id = _getDayId(timestamp)
-  let entity = _getOrCreateFeeStat(id, "daily")
-  entity.setBigInt(type, entity.getBigInt(type) + fees)
-  entity.save()
-
-  let totalEntity = _getOrCreateFeeStat("total", "total")
-  totalEntity.setBigInt(type, totalEntity.getBigInt(type) + fees)
-  totalEntity.save()
-}
-
-function _getOrCreateFeeStat(id: string, period: string): FeeStat {
-  let entity = FeeStat.load(id)
-  if (entity === null) {
-    entity = new FeeStat(id)
-    for (let i = 0; i < TRADE_TYPES.length; i++) {
-      let _type = TRADE_TYPES[i]
-      entity.setBigInt(_type, ZERO)
-    }
-    entity.period = period
-  }
-  return entity as FeeStat
-}
-
-function _storeVolume(type: string, timestamp: BigInt, volume: BigInt): void {
-  let deprecatedId = _getHourId(timestamp)
-  let deprecatedEntity = HourlyVolume.load(deprecatedId)
-
-  if (deprecatedEntity == null) {
-    deprecatedEntity = new HourlyVolume(deprecatedId)
-    for (let i = 0; i < TRADE_TYPES.length; i++) {
-      let _type = TRADE_TYPES[i]
-      deprecatedEntity.setBigInt(_type, ZERO)
-    }
-  }
-
-  deprecatedEntity.setBigInt(type, deprecatedEntity.getBigInt(type) + volume)
-  deprecatedEntity.save()
-
-  let hourId = _getHourId(timestamp) + ":hourly"
-  let hourEntity = _getOrCreateVolumeStat(hourId, "hourly")
-  hourEntity.setBigInt(type, hourEntity.getBigInt(type) + volume)
-  hourEntity.save()
-
-  let dayId = _getDayId(timestamp)
-  let dayEntity = _getOrCreateVolumeStat(dayId, "daily")
-  dayEntity.setBigInt(type, dayEntity.getBigInt(type) + volume)
-  dayEntity.save()
-
-  let totalEntity = _getOrCreateVolumeStat("total", "total")
-  totalEntity.setBigInt(type, totalEntity.getBigInt(type) + volume)
-  totalEntity.save()
-}
-
-function _getOrCreateVolumeStat(id: string, period: string): VolumeStat {
-  let entity = VolumeStat.load(id)
-  if (entity === null) {
-    entity = new VolumeStat(id)
-    entity.margin = ZERO
-    entity.swap = ZERO
-    entity.liquidation = ZERO
-    entity.mint = ZERO
-    entity.burn = ZERO
-    entity.period = period
-  }
-  return entity as VolumeStat
-}
-
-function _storeVolumeBySource(type: string, timestamp: BigInt, source: Address | null, volume: BigInt): void {
-  let id = _getHourId(timestamp) + ":" + source.toHexString()
-  let entity = HourlyVolumeBySource.load(id)
-
-  if (entity == null) {
-    entity = new HourlyVolumeBySource(id)
-    if (source == null) {
-      entity.source = ""
-    } else {
-      entity.source = source.toHexString()
-    }
-    entity.timestamp = timestamp.toI32() / 3600 * 3600
-    for (let i = 0; i < TRADE_TYPES.length; i++) {
-      let _type = TRADE_TYPES[i]
-      entity.setBigInt(_type, ZERO)
-    }
-  }
-
-  entity.setBigInt(type, entity.getBigInt(type) + volume)
-  entity.save()
-}
-
-function _storeVolumeByToken(type: string, timestamp: BigInt, tokenA: Address, tokenB: Address, volume: BigInt): void {
-  let id = _getHourId(timestamp) + ":" + tokenA.toHexString() + ":" + tokenB.toHexString()
-  let entity = HourlyVolumeByToken.load(id)
-
-  if (entity == null) {
-    entity = new HourlyVolumeByToken(id)
-    entity.tokenA = tokenA
-    entity.tokenB = tokenB
-    entity.timestamp = timestamp.toI32() / 3600 * 3600
-    for (let i = 0; i < TRADE_TYPES.length; i++) {
-      let _type = TRADE_TYPES[i]
-      entity.setBigInt(_type, ZERO)
-    }
-  }
-
-  entity.setBigInt(type, entity.getBigInt(type) + volume)
-  entity.save()
-}
-
-function _getOrCreateGlpStat(id: string, period: string): GlpStat {
-  let entity = GlpStat.load(id)
-  if (entity == null) {
-    entity = new GlpStat(id)
-    entity.period = period
-    entity.glpSupply = ZERO
-    entity.aumInUsdg = ZERO
-    entity.distributedEth = ZERO
-    entity.distributedEthCumulative = ZERO
-    entity.distributedUsd = ZERO
-    entity.distributedUsdCumulative = ZERO
-    entity.distributedEsgmx = ZERO
-    entity.distributedEsgmxCumulative = ZERO
-    entity.distributedEsgmxUsd = ZERO
-    entity.distributedEsgmxUsdCumulative = ZERO
-    // entity.timestamp = timestamp
-  }
-  return entity as GlpStat
 }
 
 export function handleDistributeEthToGlp(event: Distribute): void {
@@ -725,6 +430,318 @@ export function handleDecreaseUsdgAmount(event: DecreaseUsdgAmount): void {
   _updateUsdgAmount(timestamp, "hourly", token, totalEntity.usdgAmount);
   _updateUsdgAmount(timestamp, "daily", token, totalEntity.usdgAmount);
   _updateUsdgAmount(timestamp, "weekly", token, totalEntity.usdgAmount);
+}
+
+function _storeLiquidatedPosition(
+  keyBytes: Bytes,
+  timestamp: BigInt,
+  account: Address,
+  indexToken: Address,
+  size: BigInt,
+  collateralToken: Address,
+  collateral: BigInt,
+  isLong: boolean,
+  type: string,
+  markPrice: BigInt
+): void {
+  let key = keyBytes.toHexString()
+  let position = ActivePosition.load(key)
+  if ( position && position !== null){
+    let averagePrice = position.averagePrice
+
+    let id = key + ":" + timestamp.toString()
+    let liquidatedPosition = new LiquidatedPosition(id)
+    liquidatedPosition.account = account.toHexString()
+    liquidatedPosition.timestamp = timestamp.toI32()
+    liquidatedPosition.indexToken = indexToken.toHexString()
+    liquidatedPosition.size = size
+    liquidatedPosition.collateralToken = collateralToken.toHexString()
+    liquidatedPosition.collateral = position.collateral
+    liquidatedPosition.isLong = isLong
+    liquidatedPosition.type = type
+    liquidatedPosition.key = key
+  
+    liquidatedPosition.markPrice = markPrice
+    liquidatedPosition.averagePrice = averagePrice
+    let priceDelta = isLong ? averagePrice - markPrice : markPrice - averagePrice
+    liquidatedPosition.loss = size * priceDelta / averagePrice
+  
+    let fundingRateId = _getFundingRateId("total", collateralToken)
+    let fundingRateEntity = FundingRate.load(fundingRateId)
+    if (fundingRateEntity && fundingRateEntity != null){
+      let accruedFundingRate = BigInt.fromI32(fundingRateEntity.endFundingRate) - position.entryFundingRate
+      liquidatedPosition.borrowFee = accruedFundingRate * size / FUNDING_PRECISION  
+    }
+  
+    liquidatedPosition.save()
+  }
+
+}
+
+function _storeUserAction(timestamp: BigInt, account: Address, actionType: String): void {
+  let totalEntity = _storeUserActionByType(timestamp, account, actionType, "total", null)
+
+  _storeUserActionByType(timestamp, account, actionType, "daily", totalEntity)
+  _storeUserActionByType(timestamp, account, actionType, "weekly", totalEntity)
+}
+
+function _storeUserActionByType(
+  timestamp: BigInt,
+  account: Address,
+  actionType: string,
+  period: string,
+  userStatTotal: UserStat | null
+): UserStat {
+  let timestampId = period == "weekly" ? _getWeekId(timestamp) : _getDayId(timestamp)
+  let userId = period == "total" ? account.toHexString() : period + ":" + timestampId + ":" + account.toHexString()
+  let user = UserData.load(userId)
+
+  let statId = period == "total" ? "total" : period + ":" + timestampId
+  let userStat = UserStat.load(statId)
+  if (userStat == null) {
+    userStat = new UserStat(statId)
+    userStat.period = period
+    userStat.timestamp = parseInt(timestampId) as i32
+
+    userStat.uniqueCount = 0
+    userStat.uniqueMarginCount = 0
+    userStat.uniqueSwapCount = 0
+    userStat.uniqueMintBurnCount = 0
+
+    userStat.uniqueCountCumulative = 0
+    userStat.uniqueMarginCountCumulative = 0
+    userStat.uniqueSwapCountCumulative = 0
+    userStat.uniqueMintBurnCountCumulative = 0
+
+    userStat.actionCount = 0
+    userStat.actionMarginCount = 0
+    userStat.actionSwapCount = 0
+    userStat.actionMintBurnCount = 0
+  }
+
+  if (user == null) {
+    user = new UserData(userId) 
+    user.period = period
+    user.timestamp = parseInt(timestampId) as i32
+
+    user.actionSwapCount = 0
+    user.actionMarginCount = 0
+    user.actionMintBurnCount = 0
+
+    userStat.uniqueCount = userStat.uniqueCount + 1
+
+    if (period == "total") {
+      userStat.uniqueCountCumulative = userStat.uniqueCount
+    } else if (userStatTotal != null) {
+      userStat.uniqueCountCumulative = userStatTotal.uniqueCount
+    }
+  }
+
+  userStat.actionCount += 1
+
+  let actionCountProp: string
+  let uniqueCountProp: string
+  if (actionType == "margin") {
+    actionCountProp = "actionMarginCount"
+    uniqueCountProp = "uniqueMarginCount"
+  } else if (actionType == "swap") {
+    actionCountProp = "actionSwapCount"
+    uniqueCountProp = "uniqueSwapCount"
+  } else if (actionType == "mintBurn") {
+    actionCountProp = "actionMintBurnCount"
+    uniqueCountProp = "uniqueMintBurnCount"
+  }
+  let uniqueCountCumulativeProp = uniqueCountProp + "Cumulative"
+
+  if (user.getI32(actionCountProp) == 0) {
+    userStat.setI32(uniqueCountProp, userStat.getI32(uniqueCountProp) + 1)
+  }
+  user.setI32(actionCountProp, user.getI32(actionCountProp) + 1)
+  userStat.setI32(actionCountProp, userStat.getI32(actionCountProp) + 1)
+
+  if (period == "total") {
+    userStat.setI32(uniqueCountCumulativeProp, userStat.getI32(uniqueCountProp))
+  } else if (userStatTotal != null) {
+    userStat.setI32(uniqueCountCumulativeProp, userStatTotal.getI32(uniqueCountProp))
+  }
+
+  user.save()
+  userStat.save()
+
+  return userStat as UserStat
+}
+
+function _getFundingRateId(timeKey: string, token: Address): string {
+  return timeKey + ":" + token.toHexString()
+}
+
+function _getOrCreateGmxStat(id: string, period: string): GmxStat {
+  let entity = GmxStat.load(id)
+  if (entity == null) {
+    entity = new GmxStat(id)
+    entity.distributedEth = ZERO
+    entity.distributedEthCumulative = ZERO
+    entity.distributedUsd = ZERO
+    entity.distributedUsdCumulative = ZERO
+    entity.distributedEsgmx = ZERO
+    entity.distributedEsgmxCumulative = ZERO
+    entity.distributedEsgmxUsd = ZERO
+    entity.distributedEsgmxUsdCumulative = ZERO
+    entity.period = period
+  }
+  return entity as GmxStat
+}
+
+function _storeFees(type: string, timestamp: BigInt, fees: BigInt): void {
+  let deprecatedId = _getHourId(timestamp)
+  let entityDeprecated = HourlyFee.load(deprecatedId)
+
+  if (entityDeprecated == null) {
+    entityDeprecated = new HourlyFee(deprecatedId)
+    for (let i = 0; i < TRADE_TYPES.length; i++) {
+      let _type = TRADE_TYPES[i]
+      entityDeprecated.setBigInt(_type, ZERO)
+    }
+  }
+
+  entityDeprecated.setBigInt(type, entityDeprecated.getBigInt(type) + fees)
+  entityDeprecated.save()
+
+  //
+
+  let id = _getDayId(timestamp)
+  let entity = _getOrCreateFeeStat(id, "daily")
+  entity.setBigInt(type, entity.getBigInt(type) + fees)
+  entity.save()
+
+  let totalEntity = _getOrCreateFeeStat("total", "total")
+  totalEntity.setBigInt(type, totalEntity.getBigInt(type) + fees)
+  totalEntity.save()
+}
+
+function _getOrCreateFeeStat(id: string, period: string): FeeStat {
+  let entity = FeeStat.load(id)
+  if (entity === null) {
+    entity = new FeeStat(id)
+    for (let i = 0; i < TRADE_TYPES.length; i++) {
+      let _type = TRADE_TYPES[i]
+      entity.setBigInt(_type, ZERO)
+    }
+    entity.period = period
+  }
+  return entity as FeeStat
+}
+
+function _storeVolume(type: string, timestamp: BigInt, volume: BigInt): void {
+  let deprecatedId = _getHourId(timestamp)
+  let deprecatedEntity = HourlyVolume.load(deprecatedId)
+
+  if (deprecatedEntity == null) {
+    deprecatedEntity = new HourlyVolume(deprecatedId)
+    for (let i = 0; i < TRADE_TYPES.length; i++) {
+      let _type = TRADE_TYPES[i]
+      deprecatedEntity.setBigInt(_type, ZERO)
+    }
+  }
+
+  deprecatedEntity.setBigInt(type, deprecatedEntity.getBigInt(type) + volume)
+  deprecatedEntity.save()
+
+  let hourId = _getHourId(timestamp) + ":hourly"
+  let hourEntity = _getOrCreateVolumeStat(hourId, "hourly")
+  hourEntity.setBigInt(type, hourEntity.getBigInt(type) + volume)
+  hourEntity.save()
+
+  let dayId = _getDayId(timestamp)
+  let dayEntity = _getOrCreateVolumeStat(dayId, "daily")
+  dayEntity.setBigInt(type, dayEntity.getBigInt(type) + volume)
+  dayEntity.save()
+
+  let totalEntity = _getOrCreateVolumeStat("total", "total")
+  totalEntity.setBigInt(type, totalEntity.getBigInt(type) + volume)
+  totalEntity.save()
+}
+
+function _getOrCreateVolumeStat(id: string, period: string): VolumeStat {
+  let entity = VolumeStat.load(id)
+  if (entity === null) {
+    entity = new VolumeStat(id)
+    entity.margin = ZERO
+    entity.swap = ZERO
+    entity.liquidation = ZERO
+    entity.mint = ZERO
+    entity.burn = ZERO
+    entity.period = period
+  }
+  return entity as VolumeStat
+}
+
+function _storeVolumeBySource(type: string, timestamp: BigInt, source: Address | null, volume: BigInt): void {
+  let id: string = ""
+
+  if(source && source !== null){
+    id = _getHourId(timestamp) + ":" + source.toHexString()
+  } else {
+    id = _getHourId(timestamp) + ":"
+  }
+
+  let entity = HourlyVolumeBySource.load(id)
+
+  if (entity == null) {
+    entity = new HourlyVolumeBySource(id)
+    if(source && source !== null) {
+      entity.source = source.toHexString()
+    } else {
+      entity.source = ""      
+    }
+    entity.timestamp = timestamp.toI32() / 3600 * 3600
+    for (let i = 0; i < TRADE_TYPES.length; i++) {
+      let _type = TRADE_TYPES[i]
+      entity.setBigInt(_type, ZERO)
+    }
+  }
+
+  entity.setBigInt(type, entity.getBigInt(type) + volume)
+  entity.save()
+}
+
+function _storeVolumeByToken(type: string, timestamp: BigInt, tokenA: Address, tokenB: Address, volume: BigInt): void {
+  let id = _getHourId(timestamp) + ":" + tokenA.toHexString() + ":" + tokenB.toHexString()
+  let entity = HourlyVolumeByToken.load(id)
+
+  if (entity == null) {
+    entity = new HourlyVolumeByToken(id)
+    entity.tokenA = tokenA
+    entity.tokenB = tokenB
+    entity.timestamp = timestamp.toI32() / 3600 * 3600
+    for (let i = 0; i < TRADE_TYPES.length; i++) {
+      let _type = TRADE_TYPES[i]
+      entity.setBigInt(_type, ZERO)
+    }
+  }
+
+  entity.setBigInt(type, entity.getBigInt(type) + volume)
+  entity.save()
+}
+
+function _getOrCreateGlpStat(id: string, period: string): GlpStat {
+  let entity = GlpStat.load(id)
+  if (entity == null) {
+    entity = new GlpStat(id)
+    entity.period = period
+    entity.glpSupply = ZERO
+    entity.aumInUsdg = ZERO
+    entity.distributedEth = ZERO
+    entity.distributedEthCumulative = ZERO
+    entity.distributedUsd = ZERO
+    entity.distributedUsdCumulative = ZERO
+    entity.distributedEsgmx = ZERO
+    entity.distributedEsgmxCumulative = ZERO
+    entity.distributedEsgmxUsd = ZERO
+    entity.distributedEsgmxUsdCumulative = ZERO
+    // entity.timestamp = timestamp
+  }
+  return entity as GlpStat
 }
 
 function _updateReservedAmount(
