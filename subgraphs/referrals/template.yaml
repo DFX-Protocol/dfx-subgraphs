@@ -72,60 +72,12 @@ dataSources:
       file: ./src/mapping.ts
 
   - kind: ethereum/contract
-    name: PositionManager_v2
-    network: {{ network }}
-    source:
-      address: "{{positionManager_v2.address}}"
-      abi: PositionManager
-      startBlock: {{positionManager_v2.startBlock}}
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.6
-      language: wasm/assemblyscript
-      entities:
-        - IncreasePositionReferral
-        - DecreasePositionReferral
-      abis:
-        - name: PositionManager
-          file: ./abis/PositionManager.json
-      eventHandlers:
-        - event: IncreasePositionReferral(address,uint256,uint256,bytes32,address)
-          handler: handleIncreasePositionReferral
-        - event: DecreasePositionReferral(address,uint256,uint256,bytes32,address)
-          handler: handleDecreasePositionReferral
-      file: ./src/mapping.ts
-
-  - kind: ethereum/contract
     name: PositionRouter
     network: {{ network }}
     source:
       address: "{{positionRouter.address}}"
       abi: PositionRouter
       startBlock: {{positionRouter.startBlock}}
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.6
-      language: wasm/assemblyscript
-      entities:
-        - IncreasePositionReferral
-        - DecreasePositionReferral
-      abis:
-        - name: PositionRouter
-          file: ./abis/PositionRouter.json
-      eventHandlers:
-        - event: IncreasePositionReferral(address,uint256,uint256,bytes32,address)
-          handler: handleIncreasePositionReferral
-        - event: DecreasePositionReferral(address,uint256,uint256,bytes32,address)
-          handler: handleDecreasePositionReferral
-      file: ./src/mapping.ts
-
-  - kind: ethereum/contract
-    name: PositionRouter_v2
-    network: {{ network }}
-    source:
-      address: "{{positionRouter_v2.address}}"
-      abi: PositionRouter
-      startBlock: {{positionRouter_v2.startBlock}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -184,29 +136,6 @@ dataSources:
       file: ./src/mapping.ts
 
   - kind: ethereum/contract
-    name: EventEmitter
-    network: {{ network }}
-    source:
-      address: "{{eventEmitter.address}}"
-      abi: EventEmitter
-      startBlock: {{eventEmitter.startBlock}}
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.6
-      language: wasm/assemblyscript
-      entities:
-        - Test
-      abis:
-        - name: EventEmitter
-          file: ./abis/EventEmitter.json
-      eventHandlers:
-        - event: EventLog1(address,string,indexed string,indexed bytes32,(((string,address)[],(string,address[])[]),((string,uint256)[],(string,uint256[])[]),((string,int256)[],(string,int256[])[]),((string,bool)[],(string,bool[])[]),((string,bytes32)[],(string,bytes32[])[]),((string,bytes)[],(string,bytes[])[]),((string,string)[],(string,string[])[])))
-          handler: handleEventLog1
-        - event: EventLog2(address,string,indexed string,indexed bytes32,indexed bytes32,(((string,address)[],(string,address[])[]),((string,uint256)[],(string,uint256[])[]),((string,int256)[],(string,int256[])[]),((string,bool)[],(string,bool[])[]),((string,bytes32)[],(string,bytes32[])[]),((string,bytes)[],(string,bytes[])[]),((string,string)[],(string,string[])[])))
-          handler: handleEventLog2
-      file: ./src/mapping.ts
-
-  - kind: ethereum/contract
     name: ChainlinkAggregatorETH
     network: {{ network }}
     source:
@@ -234,27 +163,6 @@ dataSources:
       address: "{{chainlinkAggregatorUsdt.address}}"
       abi: ChainlinkAggregator
       startBlock: {{chainlinkAggregatorUsdt.startBlock}}
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.6
-      language: wasm/assemblyscript
-      entities:
-        - ChainlinkPrice
-      abis:
-        - name: ChainlinkAggregator
-          file: ./abis/ChainlinkAggregator.json
-      eventHandlers:
-        - event: AnswerUpdated(indexed int256,indexed uint256,uint256)
-          handler: handleAnswerUpdated
-      file: ./src/mapping.ts
-
-  - kind: ethereum/contract
-    name: ChainlinkAggregatorAVAX
-    network: {{ network }}
-    source:
-      address: "{{chainlinkAggregatorAvax.address}}"
-      abi: ChainlinkAggregator
-      startBlock: {{chainlinkAggregatorAvax.startBlock}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6

@@ -65,19 +65,19 @@ let ZERO = BigInt.fromI32(0);
 let ONE = BigInt.fromI32(1);
 let BASIS_POINTS_DIVISOR = BigInt.fromI32(10000);
 
-export function handleEventLog2(event: EventLog2): void {
-  let eventName = event.params.eventName;
-  // let eventData = new EventData(
-  //   event.params.eventData as EventLogEventDataStruct
-  // );
+// export function handleEventLog2(event: EventLog2): void {
+//   let eventName = event.params.eventName;
+//   // let eventData = new EventData(
+//   //   event.params.eventData as EventLogEventDataStruct
+//   // );
 
-  if (eventName == "OrderCreated") {
-    // saveStats(eventData);
+//   if (eventName == "OrderCreated") {
+//     // saveStats(eventData);
 
-    // let market = eventData.getAddressItemString("market")!;
-    return;
-  }
-}
+//     // let market = eventData.getAddressItemString("market")!;
+//     return;
+//   }
+// }
 
 export function handleAnswerUpdated(event: AnswerUpdatedEvent): void {
   let tokens = getTokenByPriceFeed(event.address.toHexString());

@@ -51,30 +51,6 @@ dataSources:
     name: PositionManager
     network: arbitrum-one
     source:
-      address: "0x87a4088Bd721F83b6c2E5102e2FA47022Cb1c831"
-      abi: PositionManager
-      startBlock: 9391374
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.6
-      language: wasm/assemblyscript
-      entities:
-        - IncreasePositionReferral
-        - DecreasePositionReferral
-      abis:
-        - name: PositionManager
-          file: ./abis/PositionManager.json
-      eventHandlers:
-        - event: IncreasePositionReferral(address,uint256,uint256,bytes32,address)
-          handler: handleIncreasePositionReferral
-        - event: DecreasePositionReferral(address,uint256,uint256,bytes32,address)
-          handler: handleDecreasePositionReferral
-      file: ./src/mapping.ts
-
-  - kind: ethereum/contract
-    name: PositionManager_v2
-    network: arbitrum-one
-    source:
       address: "0x75E42e6f01baf1D6022bEa862A28774a9f8a4A0C"
       abi: PositionManager
       startBlock: 29852256
@@ -97,30 +73,6 @@ dataSources:
 
   - kind: ethereum/contract
     name: PositionRouter
-    network: arbitrum-one
-    source:
-      address: "0x3d6ba331e3d9702c5e8a8d254e5d8a285f223aba"
-      abi: PositionRouter
-      startBlock: 9391374
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.6
-      language: wasm/assemblyscript
-      entities:
-        - IncreasePositionReferral
-        - DecreasePositionReferral
-      abis:
-        - name: PositionRouter
-          file: ./abis/PositionRouter.json
-      eventHandlers:
-        - event: IncreasePositionReferral(address,uint256,uint256,bytes32,address)
-          handler: handleIncreasePositionReferral
-        - event: DecreasePositionReferral(address,uint256,uint256,bytes32,address)
-          handler: handleDecreasePositionReferral
-      file: ./src/mapping.ts
-
-  - kind: ethereum/contract
-    name: PositionRouter_v2
     network: arbitrum-one
     source:
       address: "0xb87a436B93fFE9D75c5cFA7bAcFff96430b09868"
@@ -184,29 +136,6 @@ dataSources:
       file: ./src/mapping.ts
 
   - kind: ethereum/contract
-    name: EventEmitter
-    network: arbitrum-one
-    source:
-      address: "0x53233539a597A2f5712d17a5A5aB4e32c41852D1"
-      abi: EventEmitter
-      startBlock: 9391374
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.6
-      language: wasm/assemblyscript
-      entities:
-        - Test
-      abis:
-        - name: EventEmitter
-          file: ./abis/EventEmitter.json
-      eventHandlers:
-        - event: EventLog1(address,string,indexed string,indexed bytes32,(((string,address)[],(string,address[])[]),((string,uint256)[],(string,uint256[])[]),((string,int256)[],(string,int256[])[]),((string,bool)[],(string,bool[])[]),((string,bytes32)[],(string,bytes32[])[]),((string,bytes)[],(string,bytes[])[]),((string,string)[],(string,string[])[])))
-          handler: handleEventLog1
-        - event: EventLog2(address,string,indexed string,indexed bytes32,indexed bytes32,(((string,address)[],(string,address[])[]),((string,uint256)[],(string,uint256[])[]),((string,int256)[],(string,int256[])[]),((string,bool)[],(string,bool[])[]),((string,bytes32)[],(string,bytes32[])[]),((string,bytes)[],(string,bytes[])[]),((string,string)[],(string,string[])[])))
-          handler: handleEventLog2
-      file: ./src/mapping.ts
-
-  - kind: ethereum/contract
     name: ChainlinkAggregatorETH
     network: arbitrum-one
     source:
@@ -232,27 +161,6 @@ dataSources:
     network: arbitrum-one
     source:
       address: "0xCb35fE6E53e71b30301Ec4a3948Da4Ad3c65ACe4"
-      abi: ChainlinkAggregator
-      startBlock: 9391374
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.6
-      language: wasm/assemblyscript
-      entities:
-        - ChainlinkPrice
-      abis:
-        - name: ChainlinkAggregator
-          file: ./abis/ChainlinkAggregator.json
-      eventHandlers:
-        - event: AnswerUpdated(indexed int256,indexed uint256,uint256)
-          handler: handleAnswerUpdated
-      file: ./src/mapping.ts
-
-  - kind: ethereum/contract
-    name: ChainlinkAggregatorAVAX
-    network: arbitrum-one
-    source:
-      address: "0xcf17b68a40f10d3DcEedd9a092F1Df331cE3D9da"
       abi: ChainlinkAggregator
       startBlock: 9391374
     mapping:
