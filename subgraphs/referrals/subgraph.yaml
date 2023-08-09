@@ -7,11 +7,11 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: OrderBook
-    network: arbitrum-one
+    network: base-testnet
     source:
-      address: "0x09f77e8a13de9a35a7231028187e9fd5db8a2acb"
+      address: "0xFAeBD5459E566D1c6BE8Eb6b483b00A3FA3eC233"
       abi: OrderBook
-      startBlock: 9391374
+      startBlock: 8144960
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -28,11 +28,11 @@ dataSources:
 
   - kind: ethereum/contract
     name: BatchSender
-    network: arbitrum-one
+    network: base-testnet
     source:
-      address: "0x1070f775e8eb466154BBa8FA0076C4Adc7FE17e8"
+      address: "0x4Ce6356F94678540Da48e216eF3B0cE73C1BF7FE"
       abi: BatchSender
-      startBlock: 9391374
+      startBlock: 8144960
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -49,11 +49,11 @@ dataSources:
 
   - kind: ethereum/contract
     name: PositionManager
-    network: arbitrum-one
+    network: base-testnet
     source:
-      address: "0x75E42e6f01baf1D6022bEa862A28774a9f8a4A0C"
+      address: "0x3B3b9c04Fa73fA1D6db652c3F9475C2d21019c31"
       abi: PositionManager
-      startBlock: 29852256
+      startBlock: 8144960
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -73,11 +73,11 @@ dataSources:
 
   - kind: ethereum/contract
     name: PositionRouter
-    network: arbitrum-one
+    network: base-testnet
     source:
-      address: "0xb87a436B93fFE9D75c5cFA7bAcFff96430b09868"
+      address: "0xD87A3E1c59efEE79045FA77632d0C55D5A686cb4"
       abi: PositionRouter
-      startBlock: 29856759
+      startBlock: 8144960
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -97,11 +97,11 @@ dataSources:
 
   - kind: ethereum/contract
     name: ReferralStorage
-    network: arbitrum-one
+    network: base-testnet
     source:
-      address: "0xe6fab3F0c7199b0d34d7FbE83394fc0e0D06e99d"
+      address: "0xEf4908FBA6623E99053Ae7b84BAE082379733Ae6"
       abi: ReferralStorage
-      startBlock: 9391374
+      startBlock: 8144960
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -137,11 +137,11 @@ dataSources:
 
   - kind: ethereum/contract
     name: ChainlinkAggregatorETH
-    network: arbitrum-one
+    network: base-testnet
     source:
-      address: "0x3607e46698d218B3a5Cae44bF381475C0a5e2ca7"
+      address: "0xcD2A119bD1F7DF95d706DE6F2057fDD45A0503E2"
       abi: ChainlinkAggregator
-      startBlock: 9391374
+      startBlock: 8144960
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -158,11 +158,11 @@ dataSources:
 
   - kind: ethereum/contract
     name: ChainlinkAggregatorUSDT
-    network: arbitrum-one
+    network: base-testnet
     source:
-      address: "0xCb35fE6E53e71b30301Ec4a3948Da4Ad3c65ACe4"
+      address: "0xd5973EB46D6fE54E82C5337dD9536B35D080912C"
       abi: ChainlinkAggregator
-      startBlock: 9391374
+      startBlock: 8144960
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6

@@ -10,7 +10,8 @@
     "remove-local": "graph remove --node http://localhost:8020/ dfx-stats",
     "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 dfx-stats",
 
-    "prepare:arbitrum-one": "mustache ../../config/arbitrum-one.js template.yaml > subgraph.yaml"
+    "prepare:arbitrum-one": "mustache ../../config/arbitrum-one.js template.yaml > subgraph.yaml",
+    "prepare:base-testnet": "mustache ../../config/base-testnet.js template.yaml > subgraph.yaml"
   },
   "dependencies": {
     "@graphprotocol/graph-cli": "^0.51.0",

@@ -8,11 +8,11 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: ChainlinkAggregatorBTC
-    network: arbitrum-one
+    network: base-testnet
     source:
-      address: "0x942d00008D658dbB40745BBEc89A93c253f9B882"
+      address: "0xAC15714c08986DACC0379193e22382736796496f"
       abi: ChainlinkAggregator
-      startBlock: 225000
+      startBlock: 8144960
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -28,11 +28,11 @@ dataSources:
       file: ./src/pricesMapping.ts
   - kind: ethereum/contract
     name: ChainlinkAggregatorETH
-    network: arbitrum-one
+    network: base-testnet
     source:
-      address: "0x3607e46698d218B3a5Cae44bF381475C0a5e2ca7"
+      address: "0xcD2A119bD1F7DF95d706DE6F2057fDD45A0503E2"
       abi: ChainlinkAggregator
-      startBlock: 9391374
+      startBlock: 8144960
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -46,14 +46,94 @@ dataSources:
         - event: AnswerUpdated(indexed int256,indexed uint256,uint256)
           handler: handleAnswerUpdatedETH
       file: ./src/pricesMapping.ts
+  - kind: ethereum/contract
+    name: ChainlinkAggregatorLINK
+    network: base-testnet
+    source:
+      address: "0x907A947C5F34eC68F8D4eD87d4bac3FA6431a4D1"
+      abi: ChainlinkAggregator
+      startBlock: 8144960
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - ChainlinkPrice
+      abis:
+        - name: ChainlinkAggregator
+          file: ./abis/ChainlinkAggregator.json
+      eventHandlers:
+        - event: AnswerUpdated(indexed int256,indexed uint256,uint256)
+          handler: handleAnswerUpdatedLINK
+      file: ./src/pricesMapping.ts
+  - kind: ethereum/contract
+    name: ChainlinkAggregatorUSDT
+    network: base-testnet
+    source:
+      address: "0xd5973EB46D6fE54E82C5337dD9536B35D080912C"
+      abi: ChainlinkAggregator
+      startBlock: 8144960
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - ChainlinkPrice
+      abis:
+        - name: ChainlinkAggregator
+          file: ./abis/ChainlinkAggregator.json
+      eventHandlers:
+        - event: AnswerUpdated(indexed int256,indexed uint256,uint256)
+          handler: handleAnswerUpdatedUSDT
+      file: ./src/pricesMapping.ts
+  - kind: ethereum/contract
+    name: ChainlinkAggregatorUSDC
+    network: base-testnet
+    source:
+      address: "0xb85765935B4d9Ab6f841c9a00690Da5F34368bc0"
+      abi: ChainlinkAggregator
+      startBlock: 8144960
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - ChainlinkPrice
+      abis:
+        - name: ChainlinkAggregator
+          file: ./abis/ChainlinkAggregator.json
+      eventHandlers:
+        - event: AnswerUpdated(indexed int256,indexed uint256,uint256)
+          handler: handleAnswerUpdatedUSDC
+      file: ./src/pricesMapping.ts
+  - kind: ethereum/contract
+    name: ChainlinkAggregatorDAI
+    network: base-testnet
+    source:
+      address: "0x440bD1535a02243d72E0fEED45B137efcC98bF7e"
+      abi: ChainlinkAggregator
+      startBlock: 8144960
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - ChainlinkPrice
+      abis:
+        - name: ChainlinkAggregator
+          file: ./abis/ChainlinkAggregator.json
+      eventHandlers:
+        - event: AnswerUpdated(indexed int256,indexed uint256,uint256)
+          handler: handleAnswerUpdatedDAI
+      file: ./src/pricesMapping.ts
 
   - kind: ethereum/contract
     name: GlpManager2
-    network: arbitrum-one
+    network: base-testnet
     source:
-      address: "0x3963FfC9dff443c2A94f21b129D429891E32ec18"
+      address: "0x966C74f4042a2548D1f7f7B283784b63D1f82F09"
       abi: GlpManager
-      startBlock: 40559781
+      startBlock: 8144960
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -72,11 +152,11 @@ dataSources:
 
   - kind: ethereum/contract
     name: OrderBook
-    network: arbitrum-one
+    network: base-testnet
     source:
-      address: "0x09f77e8a13de9a35a7231028187e9fd5db8a2acb"
+      address: "0xFAeBD5459E566D1c6BE8Eb6b483b00A3FA3eC233"
       abi: OrderBook
-      startBlock: 9391374
+      startBlock: 8144960
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -111,11 +191,11 @@ dataSources:
 
   - kind: ethereum/contract
     name: FastPriceFeed
-    network: arbitrum-one
+    network: base-testnet
     source:
-      address: "0x73fE72C9cAA0fAf0e488570D5898984783E728Df"
+      address: "0x6FAe13888B37ead9ee121EEa521EF019fc4bC095"
       abi: FastPriceFeed
-      startBlock: 1326270
+      startBlock: 8144960
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -132,11 +212,11 @@ dataSources:
 
   - kind: ethereum/contract
     name: FastPriceEvents
-    network: arbitrum-one
+    network: base-testnet
     source:
-      address: "0x4530b7de1958270a2376be192a24175d795e1b07"
+      address: "0x0be19B8Ad0d0F552dBbA2755A5368FFb34a0f4C4"
       abi: FastPriceEvents
-      startBlock: 3716732
+      startBlock: 8144960
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -153,11 +233,11 @@ dataSources:
 
   - kind: ethereum/contract
     name: UniswapPool
-    network: arbitrum-one
+    network: base-testnet
     source:
-      address: "0x80A9ae39310abf666A87C743d6ebBD0E8C42158E"
+      address: "0xAcDc0306FF304862B33b4faD692a2161Ab846df2"
       abi: UniswapPoolV3
-      startBlock: 200000
+      startBlock: 8185268
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -174,11 +254,11 @@ dataSources:
 
   - kind: ethereum/contract
     name: FeeGmxRewardDistributor
-    network: arbitrum-one
+    network: base-testnet
     source:
-      address: "0x1DE098faF30bD74F22753c28DB17A2560D4F5554"
+      address: "0x98e60b787c2615D2a030bE67f34Ce488ab0F48b2"
       abi: RewardDistributor
-      startBlock: 218204
+      startBlock: 8144960
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -195,11 +275,11 @@ dataSources:
 
   - kind: ethereum/contract
     name: EsgmxGmxRewardDistributor
-    network: arbitrum-one
+    network: base-testnet
     source:
-      address: "0x23208B91A98c7C1CD9FE63085BFf68311494F193"
+      address: "0xB3364037ec7A75a7BB3d6f49D48C209a8d09f825"
       abi: RewardDistributor
-      startBlock: 218204
+      startBlock: 8144960
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -216,11 +296,11 @@ dataSources:
 
   - kind: ethereum/contract
     name: FeeGlpRewardDistributor
-    network: arbitrum-one
+    network: base-testnet
     source:
-      address: "0x5C04a12EB54A093c396f61355c6dA0B15890150d"
+      address: "0x1211384B5Caa41742d09C70e6696b2080eC250E6"
       abi: RewardDistributor
-      startBlock: 218204
+      startBlock: 8144960
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -237,11 +317,11 @@ dataSources:
 
   - kind: ethereum/contract
     name: EsgmxGlpRewardDistributor
-    network: arbitrum-one
+    network: base-testnet
     source:
-      address: "0x60519b48ec4183a61ca2B8e37869E675FD203b34"
+      address: "0xaBC3123D7623101aa2758a1cAA456cDc18c707D8"
       abi: RewardDistributor
-      startBlock: 218208
+      startBlock: 8144960
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -258,11 +338,11 @@ dataSources:
 
   - kind: ethereum/contract
     name: Vault2
-    network: arbitrum-one
+    network: base-testnet
     source:
-      address: "0x489ee077994B6658eAfA855C308275EAd8097C4A"
+      address: "0x5d672759746F1162E65f61D8210d4c3539dDB428"
       abi: Vault
-      startBlock: 227000
+      startBlock: 8144960
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -285,11 +365,11 @@ dataSources:
 
   - kind: ethereum/contract
     name: Vault
-    network: arbitrum-one
+    network: base-testnet
     source:
-      address: "0x489ee077994B6658eAfA855C308275EAd8097C4A"
+      address: "0x5d672759746F1162E65f61D8210d4c3539dDB428"
       abi: Vault
-      startBlock: 227000
+      startBlock: 8144960
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
