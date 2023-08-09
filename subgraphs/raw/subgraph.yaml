@@ -7,11 +7,11 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: PositionRouter
-    network: arbitrum-one
+    network: base-testnet
     source:
-      address: '0xb87a436B93fFE9D75c5cFA7bAcFff96430b09868'
+      address: '0xD87A3E1c59efEE79045FA77632d0C55D5A686cb4'
       abi: PositionRouter
-      startBlock: 29856759
+      startBlock: 8144960
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -31,11 +31,11 @@ dataSources:
 
   - kind: ethereum/contract
     name: RewardRouterV2
-    network: arbitrum-one
+    network: base-testnet
     source:
-      address: '0xA906F338CB21815cBc4Bc87ace9e68c87eF8d8F1'
+      address: '0x5C3ec28A889C44572D9ac70BFD873EBB95873722'
       abi: RewardRouterV2
-      startBlock: 227000
+      startBlock: 8144960
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -61,10 +61,10 @@ dataSources:
 
   - kind: ethereum/contract
     name: Vault
-    network: arbitrum-one
+    network: base-testnet
     source:
-      startBlock: 227000
-      address: '0x489ee077994B6658eAfA855C308275EAd8097C4A'
+      startBlock: 8144960
+      address: '0x5d672759746F1162E65f61D8210d4c3539dDB428'
       abi: Vault
     mapping:
       kind: ethereum/events

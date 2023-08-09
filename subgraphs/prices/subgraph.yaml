@@ -7,11 +7,11 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: FastPriceEvents
-    network: arbitrum-one
+    network: base-testnet
     source:
-      address: "0x4530b7de1958270a2376be192a24175d795e1b07"
+      address: "0x0be19B8Ad0d0F552dBbA2755A5368FFb34a0f4C4"
       abi: FastPriceEvents
-      startBlock: 3716732  # FastPriceEvents was deployed
+      startBlock: 8144960  # FastPriceEvents was deployed
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
