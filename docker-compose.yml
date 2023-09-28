@@ -2,7 +2,8 @@ version: '3'
 services:
   gnode:
     image: graphprotocol/graph-node:v0.30.0
-    container_name: gnode
+    container_name: gnode-base-testnet
+    restart: always
     ports:
       # GraphQLServer: HTTP
       - '8000:8000'
@@ -29,12 +30,16 @@ services:
       GRAPH_LOG: debug
   ipfs:
     image: ipfs/go-ipfs:v0.4.23
+    container_name: ipfs-base-testnet
+    restart: always
     ports:
       - '5001:5001'
     volumes:
       - ./data/ipfs:/data/ipfs
   postgres:
     image: postgres
+    container_name: postgres-base-testnet
+    restart: always
     ports:
       - '5432:5432'
     command: ["postgres", "-cshared_preload_libraries=pg_stat_statements"]
